@@ -1,4 +1,4 @@
-from agents import Agent
+from spectrum_agents import Agent
 import random
 
 class Random(Agent):

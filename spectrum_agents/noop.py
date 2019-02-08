@@ -1,4 +1,4 @@
-from agents import Agent
+from spectrum_agents import Agent
 
 class Noop(Agent):
     """

@@ -1,7 +1,7 @@
 import numpy as np
 import random
 
-from agents import Agent
+from spectrum_agents import Agent
 
 class Q(Agent):
     """
