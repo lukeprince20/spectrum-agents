@@ -48,15 +48,17 @@ class Agent(object):
         self.s = None # state
         self.a = None # decision
 
-        assert( seed is None or isinstance(seed,int) ), "seed must be integer or of NoneType"
+        assert(seed is None or isinstance(seed,int)), "seed must be integer or None"
         self._seed = seed
-
-        assert( start is None or (0 <= floor(start) < self.N) ), "start must be a valid decision value or of NoneType"
-        self._start = floor(start) if start is not None else None
+        self._start = start
 
     def step(self, o=None, r=None, info=None):
-        self.decide(o=o, r=r) # updates self.a
-        self.learn(o=o, r=r)
+        if self._start is not None:
+            self.a = self._start
+            self._start = None
+        else:
+            self.learn(o=o, r=r)
+            self.decide(o=o, r=r) # updates self.a
         self.s = o # update state
         return self.a
 
