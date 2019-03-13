@@ -8,8 +8,8 @@ class Incumbent(Agent):
     inherited from Agent.
     Basically, this agent does nothing...
     """
-    def _decide(self,o=None,r=None):
-        return self.a
+    def decide(self, observation, reward):
+        return self.action
 
-    def _learn(self,o=None,r=None):
+    def learn(self, observation, reward):
         pass

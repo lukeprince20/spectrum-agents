@@ -1,41 +1,32 @@
+from gym_spectrum.envs import SpectrumEnv
+
 class Agent(object):
     """
     Agent base class. 
-    Subclasses must implement _decide and _learn methods.
+    Subclasses must implement decide and learn methods.
+    Subcalsses must decide which observations are relevant.
     """
-    def __init__(self, agent_id,  N, seed=None, start=None):
+    def __init__(self, agent_id, env, sensors=None, seed=None, start=None):
         self.id = agent_id
-        self.N = N # num channels
-        self.s = None # state
-        self.a = None # decision
+        self.env = env
+        self.state = tuple(None for _ in env.channels)
+        self.action = tuple(None for _ in env.channels)
+        self.sensors = sensors
+        self.start = start
+        self.seed = seed
 
-        assert(seed is None or isinstance(seed,int)), "seed must be integer or None"
-        self._seed = seed
-        self._start = start
-
-    def step(self, o=None, r=None, info=None):
-        if self._start is not None:
-            self.a = self._start
-            self._start = None
+    def step(self, observation, reward):
+        if self.start is not None:
+            self.action = self.start
+            self.start = None
         else:
-            self.learn(o=o, r=r)
-            self.decide(o=o, r=r) # updates self.a
-        self.s = o # update state
-        return self.a
+            self.learn(observation, reward)
+            self.action = self.decide(observation, reward)
+        self.state = observation
+        return self.action
 
-    def decide(self, o=None, r=None):
-        if self._start is not None:
-            self.a = self._start
-            self._start = None
-        else:
-            self.a = self._decide(o=o, r=r)
-
-    def _decide(self, o=None, r=None):
+    def decide(self, observation, reward):
         raise NotImplementedError
 
-    def learn(self, o=None, r=None):
-        self._learn(o=o, r=r)
-
-    def _learn(self, o=None, r=None):
+    def learn(self, observation, reward):
         raise NotImplementedError
-

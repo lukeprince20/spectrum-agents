@@ -8,19 +8,19 @@ class Rotating(Agent):
     rotates through available channels in order each epoch (time step).
     Rotating agent initialization handled by inherited functionality from Agent.
     """
-    def __init__(self, agent_id, N, seed=None, start=None):
-        super().__init__(agent_id, N, seed=seed, start=start)
+    def __init__(self, agent_id, env, seed=None, start=None):
+        super().__init__(agent_id, env, sensors=len(env.channels), seed=seed, start=start)
         try:
-            self.a = deque(self.a)
+            self.action = deque(self.action)
         except:
             pass
 
-    def _decide(self,o=None,r=None):
-        if isinstance(self.a, deque):
-            self.a.rotate()
-            return tuple(self.a)
+    def decide(self, observation, reward):
+        if isinstance(self.action, deque):
+            self.action.rotate()
+            return tuple(self.action)
         else:
-            return self.a
+            return self.action
 
-    def _learn(self,o=None,r=None):
+    def learn(self, observation, reward):
         pass

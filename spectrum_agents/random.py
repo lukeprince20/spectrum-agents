@@ -6,11 +6,11 @@ class Random(Agent):
     Random Agent inheriting from Agent base class.
     Picks channels at random and learns nothing.
     """
-    def _decide(self,o=None,r=None):
-        if hasattr(o, "__iter__"):
-            return tuple(random.randint(0, 1) for _ in o)
+    def decide(self, observation, reward):
+        if hasattr(observation, "__iter__"):
+            return tuple(random.randint(0, 1) for _ in observation)
         else:
             return random.randint(0, 1)
 
-    def _learn(self,o=None,r=None):
+    def learn(self, observation, reward):
         pass
