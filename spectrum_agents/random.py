@@ -7,7 +7,10 @@ class Random(Agent):
     Picks channels at random and learns nothing.
     """
     def _decide(self,o=None,r=None):
-        return random.randint(0, self.N-1) # {0,...,N-1}
+        if hasattr(o, "__iter__"):
+            return tuple(random.randint(0, 1) for _ in o)
+        else:
+            return random.randint(0, 1)
 
     def _learn(self,o=None,r=None):
         pass

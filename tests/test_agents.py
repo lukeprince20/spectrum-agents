@@ -22,29 +22,27 @@ def run_test(agent, env):
 channel_env = ChannelEnv(alpha=0.1, beta=0.2, epochs=50)
 spectrum_env = SpectrumEnv(alphas=[0.1, 0.1], betas=[0.2, 0.2], epochs=50)
 
-# Create agents
-#agent_noop = Noop('Noop', 2, start=0) # id: Noop, channels: 2, starting action: 0
-agent_incumbent = Incumbent('Incumbent', 2, start=0) # id: Incumbent, channels: 2, starting action: 0
-agent_rotating = Rotating('Rotating', 2, start=0) # id: Rotating, channels: 2, starting action: 0
-agent_random = Random('Random', 2, start=0) # id: Random, channels: 2, starting action: 0
-agent_bandit = Bandit('Bandit', 2, start=0) # id: Bandit, channels: 2, starting action: 0
-agent_q = Q('Q', 2, start=0) # id: Q, channels: 2, starting action: 0
+for env in (channel_env, spectrum_env):
+    agent_noop = Noop('Noop', 2, start=env.action_space.sample())
+    agent_incumbent = Incumbent('Incumbent', 2, start=env.action_space.sample())
+    agent_random = Random('Random', 2, start=env.action_space.sample())
+    #agent_rotating = Rotating('Rotating', 2, start=env.action_space.sample())
+    run_test(agent_noop, env)
+    run_test(agent_incumbent, env)
+    run_test(agent_random, env)
+    #run_test(agent_rotating, env)
 
-agent_genie = Genie('Genie', spectrum_env,
-        start=spectrum_env.action_space.sample())
-agent_belief_genie = BeliefGenie('BeliefGenie', spectrum_env,
-        start=spectrum_env.action_space.sample())
-agent_replicated_q = ReplicatedQ('ReplicatedQ', spectrum_env,
-        start=spectrum_env.action_space.sample())
+    if 0: #env == channel_env:
+        agent_bandit = Bandit('Bandit', 2, start=env.action_space.sample())
+        agent_q = Q('Q', 2, start=env.action_space.sample())
+        run_test(agent_bandit, env)
+        run_test(agent_q, env)
 
-# Test agents
-#run_test(agent_noop, channel_env)
-run_test(agent_incumbent, channel_env)
-run_test(agent_rotating, channel_env)
-run_test(agent_random, channel_env)
-run_test(agent_bandit, channel_env)
-run_test(agent_q, channel_env)
+    if 0: #env == spectrum_env:
+        agent_genie = Genie('Genie', spectrum_env, start=env.action_space.sample())
+        agent_belief_genie = BeliefGenie('BeliefGenie', env, start=env.action_space.sample())
+        agent_replicated_q = ReplicatedQ('ReplicatedQ', env, start=env.action_space.sample())
+        run_test(agent_genie, env)
+        run_test(agent_belief_genie, env)
+        run_test(agent_replicated_q, env)
 
-run_test(agent_genie, spectrum_env)
-run_test(agent_belief_genie, spectrum_env)
-run_test(agent_replicated_q, spectrum_env)
