@@ -10,24 +10,24 @@ def run_test(agent, env):
     done = False
     while not done:
         a = agent.step(observation=o, reward=r)
-        try:
-            m = tuple('no-op' if (x is None) else 'predict' for x in a)
-        except:
-            m = 'no-op' if (a is None) else 'predict'
-        (o, r, done, _) = env.step(a, mode=m)
-        print("Action Taken: ", a, "; ", env.render(mode="string"), "; Observation: ", o, "; Reward: ", r)
+        m = 'access'
+        (o, r, done, _) = env.step(a,mode=m)
+        print("Action Taken: ", a, "; ", env.render(mode="string"), ";Observation: ", agent.partial_observation(o), "; Reward: ", r)
     print("\n\n")
 
+# Create RNG
+rng = np.random.RandomState()
+
 # Create environment
-env = SpectrumEnv(alphas=[0.1, 0.1], betas=[0.2, 0.2], epochs=50)
+env = SpectrumEnv(alphas=[0.1] * 5, betas=[0.2] * 5, epochs=50)
 
 # Create agents
-agent_noop = Noop('Noop', env, start=env.action_space.sample())
-agent_incumbent = Incumbent('Incumbent', env, start=env.action_space.sample())
-agent_random = Random('Random', env, start=env.action_space.sample())
-agent_genie = Genie('Genie', env, start=env.action_space.sample())
-agent_belief_genie = BeliefGenie('BeliefGenie', env, start=env.action_space.sample())
-agent_replicated_q = ReplicatedQ('ReplicatedQ', env, start=env.action_space.sample())
+agent_noop = Noop('Noop', env, seed=rng.randint(0, 2**32), start=env.action_space.sample())
+agent_incumbent = Incumbent('Incumbent', env, seed=rng.randint(0, 2**32), start=env.action_space.sample())
+agent_random = Random('Random', env, seed=rng.randint(0, 2**32), start=env.action_space.sample())
+agent_genie = Genie('Genie', env, seed=rng.randint(0, 2**32), start=env.action_space.sample())
+agent_belief_genie = BeliefGenie('BeliefGenie', env, seed=rng.randint(0, 2**32), start=env.action_space.sample(), sensors=2)
+agent_replicated_q = ReplicatedQ('ReplicatedQ', env, seed=rng.randint(0, 2**32), start=env.action_space.sample(), sensors=2)
 
 # Run tests
 run_test(agent_noop, env)

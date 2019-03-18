@@ -1,5 +1,4 @@
 from spectrum_agents import Agent
-import random
 
 class Random(Agent):
     """
@@ -8,9 +7,9 @@ class Random(Agent):
     """
     def decide(self, observation, reward):
         if hasattr(observation, "__iter__"):
-            return tuple(random.randint(0, 1) for _ in observation)
+            return tuple(self.rng.randint(0, 2) for _ in observation)
         else:
-            return random.randint(0, 1)
+            return self.rng.randint(0, 2)
 
     def learn(self, observation, reward):
         pass
