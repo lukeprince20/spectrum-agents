@@ -1,5 +1,6 @@
 import numpy as np
 from spectrum_agents import Agent
+import pdb
 
 class ReplicatedQ(Agent):
     def __init__(self, agent_id, env, sensors=None, seed=None, start=None):
@@ -23,9 +24,9 @@ class ReplicatedQ(Agent):
         def belief_update(b,o,p):
             if o is None:
                 belief = np.dot(p.transpose(), b) # Markov evolution
-            elif o is 0:
+            elif o == 0:
                 belief = np.array([1.0, 0.0]) # observed as vacant
-            elif o is 1:
+            elif o == 1:
                 belief = np.array([0.0, 1.0]) # observed as occupied
             return belief
 
@@ -55,35 +56,36 @@ class ReplicatedQ(Agent):
             r = self.rng.random_sample(len(x))
             return np.lexsort((r,x))
 
-        observation = self.partial_observation(observation)
+        next_belief_dict = {k:
+                np.dot(self.env.transition_dict[k].transpose(), b)
+                for (k,b) in self.belief_dict.items()}
 
+        idle_belief = tuple(b[0] for _,b in next_belief_dict.items())
+        idle_likelihood = tuple(x >= 0.5 for x in idle_belief)
+        idle_belief_arg_sorted = argsort_randomtie(idle_belief)
+        idle_belief_arg_sorted_desc = idle_belief_arg_sorted[::-1]
+
+        # exploration - epsilon-greedy action selection
         self.eps = self.eps_schedule(self.eps)
         if (self.rng.random_sample() < self.eps):
             random_decision = np.zeros(len(self.env.channels), np.int64)
             sensor_index = self.rng.choice(len(self.env.channels), self.sensors, replace=False)
-            random_decision[sensor_index] = 1
+            #random_decision[sensor_index] = 1
+            random_decision[sensor_index] = self.rng.choice([0, 1], self.sensors)
             return random_decision
+            #return tuple(a.item() for a in random_decision)
 
+        # exploitation - q-learning action selection
         expected_q_dict = {k:b.dot(self.q_dict[k]) for (k,b) in self.belief_dict.items()}
         idle_q = tuple(v[0] for _,v in expected_q_dict.items())
-        q_sorted = argsort_randomtie(idle_q)
+        idle_q_args_sorted = argsort_randomtie(idle_q)
+        idle_q_args_sorted_desc = idle_q_args_sorted[::-1]
+        
+        # limit used sensors to channels with idle likelihood
+        num_active_sensors = min(sum(idle_likelihood), self.sensors)
+        active_sensors = idle_q_args_sorted_desc[:num_active_sensors]
+
+        # populate sensor decision array
         sensor_decision = np.zeros(len(self.env.channels), np.int64)
-        sensor_decision[q_sorted[::-1][:self.sensors]] = 1
-        return tuple(a for a in sensor_decision)
-
-        #decision_dict = self._egreedy(observation)
-        #decision = tuple(decision_dict[k] for k in range(len(self.env.channels)))
-        #return decision
-        ##return tuple(a if s else None for s,a in zip(sensor_decision, decision))
-
-    def _egreedy(self, observation):
-        def egreedy_element(qb, isGreedy):
-            return np.argmax(qb) if isGreedy else self.rng.randint(0,2)
-
-        self.eps = self.eps_schedule(self.eps)
-        expected_q_dict = {k:b.dot(self.q_dict[k]) for (k,b) in self.belief_dict.items()}
-        greedy_dict = {k:self.rng.random_sample() > self.eps for k in self.q_dict.keys()}
-        decision_dict = {k:
-                egreedy_element(expected_q_dict[k], tf)
-                for k, tf in greedy_dict.items()}
-        return decision_dict
+        sensor_decision[active_sensors] = 1
+        return tuple(a.item() for a in sensor_decision)
